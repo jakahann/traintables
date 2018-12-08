@@ -4,27 +4,35 @@
     <input type="text" v-on:input="getShort">
     <hr>
     <p>{{ station }}</p>
+    <span>
+      <button v-on:click="getButton" value="Lähtee">Lähtevät</button>
+      <button v-on:click="getButton" value="Saapuu">Saapuvat</button></span>
     <b-table striped hover :items="items"></b-table>
   </div>
 </template>
 
 <script>
 import Logo from "~/components/Logo.vue";
-const testi = [{ Juna: "", Lähtöasema: "", Pääteasema: "", Saapuu: "" }];
+const testi = [];
 
 export default {
   data() {
     return {
       station: "Ei asemaa",
       stationCodes: new Object(),
-      items: testi
+      items: testi,
+      suunta: "Lähtee"
     };
   },
   methods: {
+    getButton() {},
     getShort(event) {
       let a = this.stationCodes[event.target.value];
       console.log(a);
-      if (a == undefined) this.station = "Ei asemaa"
+      if (a == undefined)  {
+        this.station = "Ei asemaa"
+        this.items = []
+      }
       if (a != undefined) {
         this.station = event.target.value
         this.getTraffic(a);
@@ -35,32 +43,44 @@ export default {
       for (let key in this.stationCodes){
         let long = key
         let shortCode = this.stationCodes[key]
-        console.log(long)
+        // console.log(long)
         if (short == shortCode) return long
       }
       
     
     },
-
+//https://rata.digitraffic.fi/api/v1/live-trains/station/KOK
+//?departing_trains=50&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0
     getTraffic(station) {
       this.$axios
         .get(
-          "https://rata.digitraffic.fi/api/v1/live-trains/station/" + station
+          "https://rata.digitraffic.fi/api/v1/live-trains/station/" + station +
+          "?departing_trains=50&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0"
         )
         .then(resp => {
-          console.log(resp.data);
+          this.items = []
           for (let train of resp.data) {
-            // console.log(train.trainType)
+          
             let tableLen = train.timeTableRows.length
+            var deparTime = "NaN";
+            console.log("ASEMA: " + station)
+            for (let stop of train.timeTableRows) {
+              if (stop.stationShortCode == station && stop.type == "DEPARTURE"){
+                console.log("apla")
+                deparTime = stop.scheduledTime
+              }
+              
+            }
             // console.log("PITUUS: " + tableLen)
+            if (train.trainCategory != "Shunting" && train.trainCategory != "Cargo"  && train.trainCategory != "Locomotive") {
             this.items.push({
               Juna: train.trainType + train.trainNumber,
               Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
               Pääteasema: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
-              Saapuu: ""
+              Saapuu: deparTime
             });
+            }
           }
-          this.getLong("KOK")
         })
         .catch(err => console.log(err));
     }
