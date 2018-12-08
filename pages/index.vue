@@ -24,11 +24,11 @@ export default {
     getShort(event) {
       let a = this.stationCodes[event.target.value];
       console.log(a);
+      if (a == undefined) this.station = "Ei asemaa"
       if (a != undefined) {
-        //  this.station = a
+        this.station = event.target.value
         this.getTraffic(a);
       }
-      return a
     },
     getLong(short) {
       
