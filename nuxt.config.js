@@ -51,6 +51,13 @@ module.exports = {
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
   },
+  env: {
+      baseUrl:'https://rata.digitraffic.fi/api/v1/live-trains/station/',
+      // DEPARTURE: "?departing_trains=50&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0",
+      // ARRIVAL: "?departing_trains=0&include_nonstopping=false&departed_trains=0&arriving_trains=50&arrived_trains=0"
+      TESTING: "?arrived_trains=0&arriving_trains=0&departed_trains=5&departing_trains=0&include_nonstopping=false"
+    
+  },
 
   /*
   ** Build configuration

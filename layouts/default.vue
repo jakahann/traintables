@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div class="header"><h3>Aseman junatiedot</h3></div>
     <nuxt/>
   </div>
 </template>
@@ -19,6 +20,22 @@ html {
   box-sizing: border-box;
 }
 
+.header {
+  background-color: #56A319;
+  width: 100%;
+  height: 60px;
+  align-items: center;
+  box-sizing: border-box;
+  content: left;
+  color: white;
+
+}
+.header h3 {
+  position: relative;
+  top: 25%;
+  left: 20px;
+  
+}
 *,
 *:before,
 *:after {

@@ -1,97 +1,153 @@
 <template>
-  <div>
-    <h1>Aseman junatiedot</h1>
+  <div class="container">
+    <p><b>Hae aseman nimellä</b></p>
     <input type="text" v-on:input="getShort">
-    <hr>
-    <p>{{ station }}</p>
-    <span>
-      <button v-on:click="getButton" value="Lähtee">Lähtevät</button>
-      <button v-on:click="getButton" value="Saapuu">Saapuvat</button></span>
-    <b-table striped hover :items="items"></b-table>
+    <br>
+    <div>
+      <button class="selected" v-on:click="getButton" value="ARRIVAL">Saapuvat</button>
+      <button v-on:click="getButton" value="DEPARTURE">Lähtevät</button>
+      <p> {{ getTables }}</p>
+    </div>
+    <b-table class="table" v-if="way == 'ARRIVAL'" 
+             striped 
+             hover 
+             :items="items" 
+             :fields="arrival" 
+             :sort-by.sync="sortArr"
+             :sort-desc.sync="sortDesc"></b-table>
+    <b-table class="table" v-else 
+             striped 
+             hover 
+             :items="items" 
+             :fields="departure" 
+             :sort-by.sync="sortDep"
+             :sort-desc.sync="sortDesc"></b-table>
+
   </div>
+
 </template>
 
 <script>
 import Logo from "~/components/Logo.vue";
-const testi = [];
-
+import moment from "moment";
 export default {
   data() {
     return {
+      sortArr: "Saapuu",
+      sortDep: "Lähtee",
+      sortDesc: false,
+      arrival: [
+        {key: "Juna"}, {key: "Lähtöasema"}, {key: "Pääteasema"}, {key: "Saapuu"}],
+      departure: [{key: "Juna"}, {key: "Lähtöasema"}, {key: "Pääteasema"}, { key: "Lähtee"}],
       station: "Ei asemaa",
       stationCodes: new Object(),
-      items: testi,
-      suunta: "Lähtee"
-    };
+      items: [],
+      testi: true,
+      way: 'ARRIVAL',
+      table: null
+
+    }
+  },
+  computed: {
+    
+    traffic: function() {
+      if (this.way == "ARRIVAL") return process.env.TESTING
+      else return process.env.TESTING
+    },
+
+    getTables: function() {
+      this.$axios.get(process.env.baseUrl + this.station + this.traffic)
+      .then(resp => {
+         let passangerTrains = []
+         for (let train of resp.data) {
+           if (this.isPassangerTrain(train)) passangerTrains.push(train)
+         }
+         this.items = []
+         this.fillTable(this.station, passangerTrains, this.way)
+         console.log(this.items)
+
+        })
+      .catch(err => console.log(err))
+    }
+    
+
   },
   methods: {
-    getButton() {},
+    getButton(event) {
+      let a = event.target.value
+      this.way = a
+    },
+
     getShort(event) {
-      let a = this.stationCodes[event.target.value];
-      console.log(a);
-      if (a == undefined)  {
-        this.station = "Ei asemaa"
-        this.items = []
+      let a = this.stationCodes[event.target.value.toLowerCase()];
+      if (a == undefined) {
+        this.station = "Ei asemaa";
+        this.items = [];
       }
       if (a != undefined) {
-        this.station = event.target.value
-        this.getTraffic(a);
+        this.station = a;
       }
     },
     getLong(short) {
-      
-      for (let key in this.stationCodes){
-        let long = key
-        let shortCode = this.stationCodes[key]
-        // console.log(long)
-        if (short == shortCode) return long
+      for (let key in this.stationCodes) {
+        let long = key;
+        let shortCode = this.stationCodes[key];
+        if (short == shortCode) return long;
       }
-      
-    
     },
-//https://rata.digitraffic.fi/api/v1/live-trains/station/KOK
-//?departing_trains=50&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0
-    getTraffic(station) {
-      this.$axios
-        .get(
-          "https://rata.digitraffic.fi/api/v1/live-trains/station/" + station +
-          "?departing_trains=50&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0"
-        )
-        .then(resp => {
-          this.items = []
-          for (let train of resp.data) {
-          
-            let tableLen = train.timeTableRows.length
-            var deparTime = "NaN";
-            console.log("ASEMA: " + station)
+    isPassangerTrain(train) {
+      if  (train != "Shunting" && train != "Cargo" && train != "Locomotive" && train != "On-track machines") return true
+    },
+
+    setTime(schedule) {
+      let sched = moment(schedule).format("HH:mm")
+      return sched
+        
+    },
+    fillTable(station, stationData, way){
+       for (let train of stationData) {
+            let tableLen = train.timeTableRows.length;
+            var time = "NaN";
             for (let stop of train.timeTableRows) {
-              if (stop.stationShortCode == station && stop.type == "DEPARTURE"){
-                console.log("apla")
-                deparTime = stop.scheduledTime
+              if (stop.stationShortCode == station && stop.type == way) {
+                time = this.setTime(stop.scheduledTime);
               }
+            }
+              if (this.isPassangerTrain(train.trainCategory) ){
+                console.log(train)
+                if (this.way == "ARRIVAL")
+                {
+              this.items.push(
+                {
+                Juna: train.trainType + train.trainNumber,
+                Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
+                Pääteasema: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
+                Saapuu: time
+              })
               
+              } else {
+                this.items.push(
+                {
+                Juna: train.trainType + train.trainNumber,
+                Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
+                Pääteasema: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
+                Lähtee: time
+              })
+              }
+            }  
             }
-            // console.log("PITUUS: " + tableLen)
-            if (train.trainCategory != "Shunting" && train.trainCategory != "Cargo"  && train.trainCategory != "Locomotive") {
-            this.items.push({
-              Juna: train.trainType + train.trainNumber,
-              Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
-              Pääteasema: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
-              Saapuu: deparTime
-            });
-            }
-          }
-        })
-        .catch(err => console.log(err));
+            
     }
+
   },
   created() {
     this.$axios
       .get("https://rata.digitraffic.fi/api/v1/metadata/stations")
       .then(stations => {
         for (let station of stations.data) {
+          let nameLower = (station.stationName.split(" ")[0]).toLowerCase()
           if (station.passengerTraffic == true) {
-            this.stationCodes[station.stationName.split(" ")[0]] =
+            this.stationCodes[nameLower] =
               station.stationShortCode;
           }
         }
@@ -102,11 +158,36 @@ export default {
 
 <style>
 .container {
-  min-height: 100vh;
+  margin-left: 20px;
+  margin-top: 20px;
+  padding: 0;
+  /* min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
+  margin-left: 20px; */
+}
+.table th{
+  border-top: 0px;
+}
+
+thead {
+  color: lightgray;
+}
+
+thead th {
+  border-top: 0px;
+}
+
+button {
+  border-bottom: 0;
+  margin-top: 50px;
+  color: #56A319
+}
+
+.selected {
+  color: gray;
 }
 
 .title {
