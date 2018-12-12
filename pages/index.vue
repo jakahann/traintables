@@ -3,7 +3,12 @@
     <p>
       <b>Hae aseman nimellä</b>
     </p>
-    <input type="text" v-on:input="getShort">
+ <vue-simple-suggest
+    v-model="chosen"
+    :list="simpleSuggestionList"
+    v-on:input="getShort"
+    :filter-by-query="true">
+  </vue-simple-suggest>
     <br>
     <div>
       <ul class="nav nav-tabs">
@@ -14,11 +19,7 @@
           <a class="nav-link" id="dep" v-on:click="getButton" value="DEPARTURE">Lähtevät</a>
         </li>
       </ul>
-      <!-- <div class="controls">
-      <button id="arr" class="button--grey active"  v-on:click="getButton" value="ARRIVAL">Saapuvat</button>
-      <button id="dep" class="button--grey" v-on:click="getButton" value="DEPARTURE">Lähtevät</button>
 
-      </div>-->
       <p>{{ getTables }}</p>
     </div>
     <b-table
@@ -46,10 +47,16 @@
 
 <script>
 import Logo from "~/components/Logo.vue";
+import VueSimpleSuggest from 'vue-simple-suggest'
 import moment from "moment";
+
 export default {
+   components: {
+      VueSimpleSuggest,
+   },
   data() {
     return {
+      chosen: '',
       sortArr: "Saapuu",
       sortDep: "Lähtee",
       sortDesc: false,
@@ -68,17 +75,25 @@ export default {
       station: "Ei asemaa",
       stationCodes: new Object(),
       items: [],
-      testi: true,
-      way: this.getButton ? "ARRIVAL" : "DEPARTURE",
-      table: null
+      cities: [],
+      way: "ARRIVAL"
     };
   },
   computed: {
     traffic: function() {
-      if (this.way == "ARRIVAL") return process.env.TESTING;
-      else return process.env.TESTING;
+      if (this.way == "ARRIVAL") return process.env.ARRIVAL;
+      else return process.env.DEPARTURE;
     },
-
+    getShort: function(){
+      let a = this.stationCodes[this.chosen.toLowerCase()];
+      if (a == undefined) {
+        this.station = "Ei asemaa";
+        this.items = [];
+      }
+      if (a != undefined) {
+        this.station = a;
+      }
+    },
     getTables: function() {
       this.$axios
         .get(process.env.baseUrl + this.station + this.traffic)
@@ -89,41 +104,42 @@ export default {
           }
           this.items = [];
           this.fillTable(this.station, passangerTrains, this.way);
-          console.log(this.items);
         })
         .catch(err => console.log(err));
     }
   },
   methods: {
+   simpleSuggestionList() {
+        return this.cities
+      },
     getButton(event) {
-    if (event.target.text == 'Lähtevät') this.way = "DEPARTURE"
-    else this.way = "ARRIVAL"      
-    console.log(this.way)
-    this.toggleButton(this.way)
-    },
-    toggleButton(current) {
-      
-      let arr = document.getElementById("arr");
-      let dep = document.getElementById("dep");
-      if (current == 'ARRIVAL') {
-        arr.classList.add("active");
-        dep.classList.remove("active");
-       } else {
-        arr.classList.remove("active");
-        dep.classList.add("active");
-       }
+      if (event.target.text == "Lähtevät") this.way = "DEPARTURE";
+      else this.way = "ARRIVAL";
+      this.toggleButton(this.way);
     },
 
-    getShort(event) {
-      let a = this.stationCodes[event.target.value.toLowerCase()];
-      if (a == undefined) {
-        this.station = "Ei asemaa";
-        this.items = [];
-      }
-      if (a != undefined) {
-        this.station = a;
+    toggleButton(current) {
+      let arr = document.getElementById("arr");
+      let dep = document.getElementById("dep");
+      if (current == "ARRIVAL") {
+        arr.classList.add("active");
+        dep.classList.remove("active");
+      } else {
+        arr.classList.remove("active");
+        dep.classList.add("active");
       }
     },
+
+    // getShort(event) {
+    //   let a = this.stationCodes[event.target.value.toLowerCase()];
+    //   if (a == undefined) {
+    //     this.station = "Ei asemaa";
+    //     this.items = [];
+    //   }
+    //   if (a != undefined) {
+    //     this.station = a;
+    //   }
+    // },
     getLong(short) {
       for (let key in this.stationCodes) {
         let long = key;
@@ -155,7 +171,6 @@ export default {
           }
         }
         if (this.isPassangerTrain(train.trainCategory)) {
-          console.log(train);
           if (this.way == "ARRIVAL") {
             this.items.push({
               Juna: train.trainType + train.trainNumber,
@@ -186,6 +201,7 @@ export default {
         for (let station of stations.data) {
           let nameLower = station.stationName.split(" ")[0].toLowerCase();
           if (station.passengerTraffic == true) {
+            this.cities.push(station.stationName.split(" ")[0]);
             this.stationCodes[nameLower] = station.stationShortCode;
           }
         }
@@ -199,12 +215,7 @@ export default {
   margin-left: 20px;
   margin-top: 20px;
   padding: 0;
-  /* min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  margin-left: 20px; */
+  
 }
 .table th {
   border-top: 0px;
@@ -219,29 +230,6 @@ export default {
   margin-top: 50px;
 }
 
-/* .controls .button--grey {
-  display: inline-block;
-  background-color: none;
-  border: 0;
-  border-top: 1px solid gray;
-  border-left: 1px solid gray;
-  border-right: 1px solid gray;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-} */
-
-/* .controls .active {
-  color: #56a319;
-  border: 0px;
-  border-bottom: 1px solid gray;
-}
-.controls:after {
-  content: "";
-  width: 70%;
-  vertical-align: bottom;
-  display: inline-block;
-  border-bottom: 1px solid gray;
-} */
 
 thead {
   color: lightgray;
