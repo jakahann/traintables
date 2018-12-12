@@ -27,21 +27,36 @@
       v-if="way == 'ARRIVAL'"
       striped
       hover
-      :items="items"
+      :items="sortedTable"
       :fields="arrival"
       :sort-by.sync="sortArr"
       :sort-desc.sync="sortDesc"
-    ></b-table>
+    >
+    <template
+    slot="Saapuu" slot-scope="data">
+          <p class="difference" v-if="data.item.difference >= 0"> ({{ calcTime(data.item.aika, data.item.difference) }})</p>
+          <p class="scheduleTime">{{ parseTime(data.item.aika)  }}</p> <br>
+          <p class="cancelled" v-if="data.item.cancelled == true">Cancelled</p>
+
+    </template></b-table>
     <b-table
       class="table"
       v-else
       striped
       hover
-      :items="items"
+      
+      :items="sortedTable"
       :fields="departure"
       :sort-by.sync="sortDep"
       :sort-desc.sync="sortDesc"
-    ></b-table>
+    ><template
+    slot="Lähtee" slot-scope="data">
+        <p v-if="data.item.difference > 0">{{data.item.difference}}</p>
+          <p>{{ parseTime(data.item.aika)  }}</p> <br>
+        <p v-if="data.item.cancelled == true">Cancelled</p>
+
+    </template>
+    </b-table>
   </div>
 </template>
 
@@ -61,16 +76,17 @@ export default {
       sortDep: "Lähtee",
       sortDesc: false,
       arrival: [
-        { key: "Juna" },
-        { key: "Lähtöasema" },
-        { key: "Pääteasema" },
-        { key: "Saapuu" }
+        { key: "Juna", label: "Juna" },
+        { key: "Lähtöasema" , label: "Lähtöasema"},
+        { key: "Pääteasema", label: "Pääteasema" },
+        { key: 'Saapuu', label: 'Saapuu' }
       ],
       departure: [
-        { key: "Juna" },
-        { key: "Lähtöasema" },
-        { key: "Pääteasema" },
-        { key: "Lähtee" }
+        { key: "Juna", label: "Juna" },
+        { key: "Lähtöasema" , label: "Lähtöasema"},
+        { key: "Pääteasema", label: "Pääteasema" },
+        { key: 'Lähtee', label: 'Lähtee' }
+
       ],
       station: "Ei asemaa",
       stationCodes: new Object(),
@@ -79,10 +95,24 @@ export default {
       way: "ARRIVAL"
     };
   },
+  
   computed: {
+   
+  sortedTable: function() {
+    function compare(a, b) {
+      if (a.aika < b.aika)
+        return -1;
+      if (a.aika > b.aika)
+        return 1;
+      return 0;
+    }
+    return this.items.sort(compare);
+  
+},
     traffic: function() {
       if (this.way == "ARRIVAL") return process.env.ARRIVAL;
       else return process.env.DEPARTURE;
+
     },
     getShort: function(){
       let a = this.stationCodes[this.chosen.toLowerCase()];
@@ -103,12 +133,20 @@ export default {
             if (this.isPassangerTrain(train)) passangerTrains.push(train);
           }
           this.items = [];
-          this.fillTable(this.station, passangerTrains, this.way);
+          this.fillTable(passangerTrains);
         })
         .catch(err => console.log(err));
     }
   },
   methods: {
+    parseTime(time) {
+      let localTime = moment(time).format("HH:mm")
+      return localTime
+    },
+     calcTime(sched, diff) {
+      let newTime = moment(sched).add(diff, "minutes")
+      return newTime.format("HH:mm")
+    },
    simpleSuggestionList() {
         return this.cities
       },
@@ -130,16 +168,6 @@ export default {
       }
     },
 
-    // getShort(event) {
-    //   let a = this.stationCodes[event.target.value.toLowerCase()];
-    //   if (a == undefined) {
-    //     this.station = "Ei asemaa";
-    //     this.items = [];
-    //   }
-    //   if (a != undefined) {
-    //     this.station = a;
-    //   }
-    // },
     getLong(short) {
       for (let key in this.stationCodes) {
         let long = key;
@@ -157,43 +185,55 @@ export default {
         return true;
     },
 
-    setTime(schedule) {
-      let sched = moment(schedule).format("HH:mm");
-      return sched;
+    setTime(train) {
+      let schedule = NaN
+      for (let stop of train.timeTableRows) {
+          if (stop.stationShortCode == this.station && stop.type == this.way) {
+            schedule = stop.scheduledTime
+            return schedule
+            
+          }
+        }
+        // return moment(schedule).format("HH:mm")
     },
-    fillTable(station, stationData, way) {
+    getDifference(train) {
+      let diff = 0
+      for (let stop of train.timeTableRows) {
+          if (stop.stationShortCode == this.station && stop.type == this.way) {
+            diff = stop.differenceInMinutes
+            
+          }
+        }
+        return diff
+    },
+    isCancelled(train) {
+      
+      for (let stop of train.timeTableRows) {
+          if (stop.stationShortCode == this.station && stop.type == this.way) {
+            return stop.cancelled
+            
+          }
+        }
+    },
+    fillTable(stationData) {
       for (let train of stationData) {
         let tableLen = train.timeTableRows.length;
-        var time = "NaN";
-        for (let stop of train.timeTableRows) {
-          if (stop.stationShortCode == station && stop.type == way) {
-            time = this.setTime(stop.scheduledTime);
-          }
-        }
+        
         if (this.isPassangerTrain(train.trainCategory)) {
-          if (this.way == "ARRIVAL") {
             this.items.push({
               Juna: train.trainType + train.trainNumber,
               Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
-              Pääteasema: this.getLong(
-                train.timeTableRows[tableLen - 1].stationShortCode
-              ),
-              Saapuu: time
+              Pääteasema: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
+              aika: this.setTime(train) ,
+              difference: this.getDifference(train),
+              cancelled: this.isCancelled(train)
             });
-          } else {
-            this.items.push({
-              Juna: train.trainType + train.trainNumber,
-              Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
-              Pääteasema: this.getLong(
-                train.timeTableRows[tableLen - 1].stationShortCode
-              ),
-              Lähtee: time
-            });
-          }
         }
       }
+
     }
   },
+  
   created() {
     this.$axios
       .get("https://rata.digitraffic.fi/api/v1/metadata/stations")
