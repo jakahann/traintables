@@ -3,13 +3,15 @@
     <p>
       <b>Hae aseman nimellä</b>
     </p>
+ <!-- Hakulaatikko, autocomplete -->
  <vue-simple-suggest
     v-model="chosen"
     :list="simpleSuggestionList"
-    v-on:input="getShort"
+    v-on:input="stationCode"
     :filter-by-query="true">
   </vue-simple-suggest>
-    <br>
+
+    <!-- valinta napit, bootstrap nav-tabs -->
     <div>
       <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -18,50 +20,46 @@
         <li class="nav-item">
           <a class="nav-link" id="dep" v-on:click="getButton" value="DEPARTURE">Lähtevät</a>
         </li>
-      </ul>
-
-      <p>{{ getTables }}</p>
+        </ul>
     </div>
+
+    <!-- aikatauludata: lähtevät tai saapuvat  -->
+    <!-- riittää yksi haku -> käsittely alla riippuen onko saapuva vai lähtevä  -->
+    {{ getTables }}
+
     <b-table
       class="table"
       v-if="way == 'ARRIVAL'"
       striped
       hover
       :items="sortedTable"
-      :fields="arrival"
-      :sort-by.sync="sortArr"
-      :sort-desc.sync="sortDesc"
-    >
-    <template
-    slot="Saapuu" slot-scope="data">
-          <p class="difference" v-if="data.item.difference >= 0"> ({{ calcTime(data.item.aika, data.item.difference) }})</p>
-          <p class="scheduleTime">{{ parseTime(data.item.aika)  }}</p> <br>
+      :fields="arrival">
+      
+    <template slot="arrives" slot-scope="data">
+          <p class="difference" v-if="data.item.difference >= 0"> ({{ calcTime(data.item.time, data.item.difference) }})</p>
+          <p class="scheduleTime">{{ parseTime(data.item.time)  }}</p> <br>
           <p class="cancelled" v-if="data.item.cancelled == true">Cancelled</p>
-
-    </template></b-table>
+    </template>
+    </b-table>
+    <!-- Ylläolevan toisto -> saako yhdeksi? -->
     <b-table
       class="table"
       v-else
       striped
       hover
-      
       :items="sortedTable"
-      :fields="departure"
-      :sort-by.sync="sortDep"
-      :sort-desc.sync="sortDesc"
-    ><template
-    slot="Lähtee" slot-scope="data">
-        <p v-if="data.item.difference > 0">{{data.item.difference}}</p>
-          <p>{{ parseTime(data.item.aika)  }}</p> <br>
-        <p v-if="data.item.cancelled == true">Cancelled</p>
-
+      :fields="departure">
+      
+      <template slot="departs" slot-scope="data">
+          <p class="difference" v-if="data.item.difference >= 0"> ({{ calcTime(data.item.time, data.item.difference) }})</p>
+          <p class="scheduleTime">{{ parseTime(data.item.time)  }}</p> <br>
+          <p class="cancelled" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
     </b-table>
   </div>
 </template>
 
 <script>
-import Logo from "~/components/Logo.vue";
 import VueSimpleSuggest from 'vue-simple-suggest'
 import moment from "moment";
 
@@ -72,23 +70,20 @@ export default {
   data() {
     return {
       chosen: '',
-      sortArr: "Saapuu",
-      sortDep: "Lähtee",
-      sortDesc: false,
       arrival: [
-        { key: "Juna", label: "Juna" },
-        { key: "Lähtöasema" , label: "Lähtöasema"},
-        { key: "Pääteasema", label: "Pääteasema" },
-        { key: 'Saapuu', label: 'Saapuu' }
+        { key: "train", label: "Juna" },
+        { key: "from" , label: "Lähtöasema"},
+        { key: "to", label: "Pääteasema" },
+        { key: 'arrives', label: 'Saapuu' }
       ],
       departure: [
-        { key: "Juna", label: "Juna" },
-        { key: "Lähtöasema" , label: "Lähtöasema"},
-        { key: "Pääteasema", label: "Pääteasema" },
-        { key: 'Lähtee', label: 'Lähtee' }
+        { key: "train", label: "Juna" },
+        { key: "from" , label: "Lähtöasema"},
+        { key: "to", label: "Pääteasema" },
+        { key: 'departs', label: 'Lähtee' }
 
       ],
-      station: "Ei asemaa",
+      station: "",
       stationCodes: new Object(),
       items: [],
       cities: [],
@@ -97,27 +92,28 @@ export default {
   },
   
   computed: {
-   
+  // Järjestetty lista aikatauluista
   sortedTable: function() {
     function compare(a, b) {
-      if (a.aika < b.aika)
+      if (a.time < b.time)
         return -1;
-      if (a.aika > b.aika)
+      if (a.time > b.time)
         return 1;
       return 0;
     }
     return this.items.sort(compare);
-  
 },
+    //Suunnan mukaisen liikenteen API-kutsu
     traffic: function() {
       if (this.way == "ARRIVAL") return process.env.ARRIVAL;
       else return process.env.DEPARTURE;
 
     },
-    getShort: function(){
+    //
+    stationCode: function(){
       let a = this.stationCodes[this.chosen.toLowerCase()];
       if (a == undefined) {
-        this.station = "Ei asemaa";
+        this.station = "";
         this.items = [];
       }
       if (a != undefined) {
@@ -221,10 +217,10 @@ export default {
         
         if (this.isPassangerTrain(train.trainCategory)) {
             this.items.push({
-              Juna: train.trainType + train.trainNumber,
-              Lähtöasema: this.getLong(train.timeTableRows[0].stationShortCode),
-              Pääteasema: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
-              aika: this.setTime(train) ,
+              train: train.trainType + train.trainNumber,
+              from: this.getLong(train.timeTableRows[0].stationShortCode),
+              to: this.getLong(train.timeTableRows[tableLen - 1].stationShortCode),
+              time: this.setTime(train) ,
               difference: this.getDifference(train),
               cancelled: this.isCancelled(train)
             });
@@ -265,10 +261,6 @@ export default {
   width: 100%;
 }
 
-.controls .button--grey {
-  width: 10%;
-  margin-top: 50px;
-}
 
 
 thead {
@@ -279,25 +271,4 @@ thead th {
   border-top: 0px;
 }
 
-.title {
-  font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-
-.links {
-  padding-top: 15px;
-}
 </style>
