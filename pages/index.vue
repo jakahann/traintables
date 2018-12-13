@@ -5,9 +5,8 @@
     </p>
  <!-- Hakulaatikko, autocomplete -->
 <div class="search">
-
- <vue-single-select      
-    placeholder="Hae"
+ <vue-single-select
+    placeholder="Hae asema"
     v-model="chosen" 
     :options="cities"
     v-on:input="searchStation"
@@ -80,7 +79,6 @@ export default {
    },
   data() {
     return {
-      fruits: ['peach','pear','apple','orange'],
       chosen: '',
       arrival: [
         { key: "train", label: "Juna" },
@@ -114,6 +112,8 @@ export default {
         return 1;
       return 0;
     }
+    let a = this.tableData.sort(compare)
+    console.log(a)
     return this.tableData.sort(compare);
 },
     //Suunnan mukaisen liikenteen API-kutsu
@@ -202,21 +202,12 @@ export default {
     
     //Fill the table with train data
     fillTable(trains) {
-      this.tableData = [
-        // {
-        //       train: "T123",
-        //       from: "Testimaa",
-        //       to: "Tuppukylä",
-        //       time: "2018-12-12T18:33:00.000Z",
-        //       difference: null,
-        //       cancelled: true
-        // }
-          ]
+      this.tableData = []
       for (let train of trains) {
         let firstStation = train.timeTableRows[0].stationShortCode
         let lastStation = train.timeTableRows[train.timeTableRows.length - 1].stationShortCode
         this.tableData.push({
-              train: train.trainType + train.trainNumber,
+              train: this.getTrainName(train),
               from: this.getCityName(firstStation),
               to: this.getCityName(lastStation),
               time: this.getScheduledTime(train) ,
@@ -226,7 +217,10 @@ export default {
             });
       }
     },
-
+    getTrainName(train) {
+      if (train.trainCategory == 'Commuter') return 'Commuter train ' + train.commuterLineID
+      else return train.trainType + " " + train.trainNumber
+    },
     //return at what time train should be at searched station OR what time it should leave
     getScheduledTime(train) {
       for (let stop of train.timeTableRows) {
@@ -279,12 +273,7 @@ export default {
 </script>
 
 <style>
-/* .container {
-  margin-left: 20px;
-  margin-top: 20px;
-  padding: 0;
-  
-} */
+
 .table th {
   border-top: 0px;
 }
@@ -310,6 +299,7 @@ thead th {
 
 .search {
   max-width: 20%;
+  margin-bottom: 50px;
 }
 
 .nav  {
