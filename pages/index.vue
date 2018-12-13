@@ -3,7 +3,8 @@
     <p>
       <b>Hae aseman nimellä</b>
     </p>
- <!-- Hakulaatikko, autocomplete -->
+
+ <!-- Searchbox, autocomplete -->
 <div class="search">
  <vue-single-select
     placeholder="Hae asema"
@@ -12,7 +13,7 @@
     v-on:input="searchStation"
 ></vue-single-select> 
 </div>
-    <!-- valinta napit, bootstrap nav-tabs -->
+    <!-- Navigation tabs, bootstrap nav-tabs -->
     <div>
       <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -24,8 +25,7 @@
         </ul>
     </div>
 
-    <!-- aikatauludata: lähtevät tai saapuvat  -->
-    <!-- riittää yksi haku -> käsittely alla riippuen onko saapuva vai lähtevä  -->
+    <!-- data: arrivals tai departures  -->
     {{ getTrains }}
 
     <b-table
@@ -35,17 +35,19 @@
       hover
       :items="sortedTable"
       :fields="arrival">
-      
+
+    <!-- template to handle the last cell  -->
     <template class="info" slot="arrives" slot-scope="data">
-          <p class="late" id="late"  v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
-          <div id="time"> 
-            <p style="font-size: 0.9em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
-            <p v-else>  {{ parseTime(data.item.time)}}</p>
-              </div> 
-          <p class="cancelled" id="cancelled" style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
+      <p class="late" v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
+      <div> 
+        <p style="font-size: 0.8em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
+        <p v-else>  {{ parseTime(data.item.time)}}</p>
+      </div> 
+      <p style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
     </b-table>
-    <!-- Ylläolevan toisto -> saako yhdeksi? -->
+
+    <!-- these two tables are quite similar. Possible to use just one? -->
     <b-table
       class="table"
       v-else
@@ -55,12 +57,12 @@
       :fields="departure">
       
       <template slot="departs" slot-scope="data">
-            <p class="late" id="late"  v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
-          <div id="time"> 
-            <p style="font-size: 0.9em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
-            <p v-else>  {{ parseTime(data.item.time)}}</p>
-              </div> 
-          <p class="cancelled" id="cancelled" style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
+        <p class="late" v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
+        <div> 
+          <p style="font-size: 0.8em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
+          <p v-else>  {{ parseTime(data.item.time)}}</p>
+      </div> 
+      <p style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
     </b-table>
   </div>
@@ -68,15 +70,13 @@
 
 <script>
 import VueSingleSelect from "vue-single-select";
-
 import moment from "moment";
 
 export default {
    components: {
      VueSingleSelect
-       
-     
-   },
+  },
+  
   data() {
     return {
       chosen: '',
@@ -103,7 +103,7 @@ export default {
   
   computed: {
   
-  // Järjestetty lista aikatauluista
+  // sorted list of tableData
   sortedTable: function() {
     function compare(a, b) {
       if (a.time < b.time)
@@ -112,17 +112,16 @@ export default {
         return 1;
       return 0;
     }
-    let a = this.tableData.sort(compare)
-    console.log(a)
     return this.tableData.sort(compare);
 },
-    //Suunnan mukaisen liikenteen API-kutsu
+    //API call path depending of the way
     traffic: function() {
       if (this.way == "ARRIVAL") return process.env.ARRIVAL;
       else return process.env.DEPARTURE;
 
     },
-    //Etsii haku vastaavan aseman
+    //Search the chosen station from list of stations
+    //if found stations short code to this.station
     searchStation: function(){
       console.log(this.chosen)
       let code = this.allStations[this.chosen];
@@ -133,6 +132,7 @@ export default {
         this.station = code;
       }
     },
+
     // Retrieves data from API and populate arrays
     getTrains: function() {
       this.$axios
@@ -149,6 +149,7 @@ export default {
   },
 
   methods: {
+    //simple check if train is late
     isLate(difference) {
       if (difference > 0) {
         return true
@@ -156,28 +157,27 @@ export default {
       
 
     },
-    //Parse UTC time to local time in HH:mm format
+    //Parse UTC time to local time and return in HH:mm (14:30) format
     parseTime(time) {
       let localTime = moment(time).format("HH:mm")
       return localTime
     },
-    //Calculates new time by adding minutes
-     calcTime(sched, diff) {
+
+      //Calculates new time for a late train by adding the difference to scheduled time
+    calcTime(sched, diff) {
       let newTime = moment(sched).add(diff, "minutes")
       return newTime.format("HH:mm")
     },
-    //Returns list of suggestions for search
-      simpleSuggestionList() {
-        return this.cities
-      },
-      //
+
+    //Changes this.way according to which button is pressed
+    //calls toggle for style handling
     buttonFunction(event) {
       if (event.target.text == "Lähtevät") this.way = "DEPARTURE";
       else this.way = "ARRIVAL";
       this.toggleButton(this.way);
     },
 
-    //Changes which button is active
+    //Changes which button is active (visual styling)
     toggleButton(current) {
       let arr = document.getElementById("arr");
       let dep = document.getElementById("dep");
@@ -189,23 +189,32 @@ export default {
         dep.classList.add("active");
       }
     },
-    //returns city name based on city code
+
+    //returns city associated to given short code
     getCityName(ourCode) {
       for (let key in this.allStations) {
         if (ourCode == this.allStations[key]) return key;
       }
     },
-    //Checks if train is a passanger train
+
+    //checks if train is a passanger train (Long-distance or commuter)
     isPassangerTrain(trainCategory) {
      if (['Long-distance', 'Commuter'].indexOf(trainCategory) >= 0) return true 
     },
+
+    //get train name 
+    getTrainName(train) {
+      if (train.trainCategory == 'Commuter') return 'Commuter train ' + train.commuterLineID
+      else return train.trainType + " " + train.trainNumber
+    },
     
-    //Fill the table with train data
+    //Fill the array with the train info shown to user
     fillTable(trains) {
       this.tableData = []
       for (let train of trains) {
         let firstStation = train.timeTableRows[0].stationShortCode
         let lastStation = train.timeTableRows[train.timeTableRows.length - 1].stationShortCode
+
         this.tableData.push({
               train: this.getTrainName(train),
               from: this.getCityName(firstStation),
@@ -217,55 +226,52 @@ export default {
             });
       }
     },
-    getTrainName(train) {
-      if (train.trainCategory == 'Commuter') return 'Commuter train ' + train.commuterLineID
-      else return train.trainType + " " + train.trainNumber
-    },
-    //return at what time train should be at searched station OR what time it should leave
+    
+    //returns at what time train should arrive or leave the station
     getScheduledTime(train) {
       for (let stop of train.timeTableRows) {
           if (stop.stationShortCode == this.station && stop.type == this.way) {
             return stop.scheduledTime
-            
           }
         }
     },
+
+  //checks which variant for cell: cancelled -> customized danger else no variant
   checkVariant(train) {
         if (this.isCancelled(train)) return 'danger'
         else return ''
       },
-    //Get schedule difference in minutes
-    getDifference(train) {
-      for (let stop of train.timeTableRows) {
-          if (stop.stationShortCode == this.station && stop.type == this.way) {
-            return stop.differenceInMinutes
-            
-          }
-        }
-    },
 
-    //Check if train is cancelled
-    isCancelled(train) {
-      
-      for (let stop of train.timeTableRows) {
-          if (stop.stationShortCode == this.station && stop.type == this.way) {
-            return stop.cancelled
-           }
-        }
-    },
-    
+  //Get schedule difference in minutes
+  getDifference(train) {
+    for (let stop of train.timeTableRows) {
+      if (stop.stationShortCode == this.station && stop.type == this.way) {
+        return stop.differenceInMinutes
+      }
+    }
   },
 
+  //Check if train is cancelled
+  isCancelled(train) {
+     for (let stop of train.timeTableRows) {
+       if (stop.stationShortCode == this.station && stop.type == this.way) {
+          return stop.cancelled
+        }
+      }
+    },
+  },
+
+  //Lifecycle hook collects metadata when site created
   created() {
     this.$axios
       .get("https://rata.digitraffic.fi/api/v1/metadata/stations")
       .then(stations => {
         for (let station of stations.data) {
           let name = station.stationName.split(" asema")[0];
-       if (station.passengerTraffic == true) {
-            this.cities.push(name);
-            this.allStations[name] = station.stationShortCode;
-         }
+          if (station.passengerTraffic == true) {
+             this.cities.push(name);
+             this.allStations[name] = station.stationShortCode;
+          }
         }
       });
   }
@@ -282,8 +288,6 @@ export default {
   width: 100%;
 }
 
-
-
 thead {
   color: lightgray;
 }
@@ -292,13 +296,13 @@ thead th {
   border-top: 0px;
 }
 
-
 .late {
   color: red;
 }
 
 .search {
-  max-width: 20%;
+  min-width: 20%;
+  max-width: 35%; 
   margin-bottom: 50px;
 }
 

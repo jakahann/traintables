@@ -1,7 +1,7 @@
 {
   "name": "junat",
   "version": "1.0.0",
-  "description": "My priceless Nuxt.js project",
+  "description": "Finnish railway timetables",
   "author": "Jarno Hänninen",
   "private": true,
   "scripts": {
