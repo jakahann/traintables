@@ -4,13 +4,15 @@
       <b>Hae aseman nimellä</b>
     </p>
  <!-- Hakulaatikko, autocomplete -->
- <vue-simple-suggest
-    v-model="chosen"
-    :list="simpleSuggestionList"
-    v-on:input="searchStation"
-    :filter-by-query="true">
-  </vue-simple-suggest>
+<div class="search">
 
+ <vue-single-select      
+    placeholder="Hae"
+    v-model="chosen" 
+    :options="cities"
+    v-on:input="searchStation"
+></vue-single-select> 
+</div>
     <!-- valinta napit, bootstrap nav-tabs -->
     <div>
       <ul class="nav nav-tabs">
@@ -35,13 +37,13 @@
       :items="sortedTable"
       :fields="arrival">
       
-    <template slot="arrives" slot-scope="data">
+    <template class="info" slot="arrives" slot-scope="data">
           <p class="late" id="late"  v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
           <div id="time"> 
-            <p v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
+            <p style="font-size: 0.9em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
             <p v-else>  {{ parseTime(data.item.time)}}</p>
               </div> 
-          <p class="cancelled" id="cancelled"  v-if="data.item.cancelled == true">Cancelled</p>
+          <p class="cancelled" id="cancelled" style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
     </b-table>
     <!-- Ylläolevan toisto -> saako yhdeksi? -->
@@ -54,24 +56,31 @@
       :fields="departure">
       
       <template slot="departs" slot-scope="data">
-          <p class="hidden"  v-if="data.item.difference > 0"> {{ calcTime(data.item.time, data.item.difference) }} </p>
-          <p id="scheduleTime">{{ parseTime(data.item.time)  }}</p> <br>
-          <p id="cancelled"  v-if="data.item.cancelled == true">Cancelled</p>
+            <p class="late" id="late"  v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
+          <div id="time"> 
+            <p style="font-size: 0.9em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
+            <p v-else>  {{ parseTime(data.item.time)}}</p>
+              </div> 
+          <p class="cancelled" id="cancelled" style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
     </b-table>
   </div>
 </template>
 
 <script>
-import VueSimpleSuggest from 'vue-simple-suggest'
+import VueSingleSelect from "vue-single-select";
+
 import moment from "moment";
 
 export default {
    components: {
-      VueSimpleSuggest,
+     VueSingleSelect
+       
+     
    },
   data() {
     return {
+      fruits: ['peach','pear','apple','orange'],
       chosen: '',
       arrival: [
         { key: "train", label: "Juna" },
@@ -95,6 +104,7 @@ export default {
   },
   
   computed: {
+  
   // Järjestetty lista aikatauluista
   sortedTable: function() {
     function compare(a, b) {
@@ -114,6 +124,7 @@ export default {
     },
     //Etsii haku vastaavan aseman
     searchStation: function(){
+      console.log(this.chosen)
       let code = this.allStations[this.chosen];
       if (code == undefined) {
         this.station = "no data";
@@ -210,7 +221,8 @@ export default {
               to: this.getCityName(lastStation),
               time: this.getScheduledTime(train) ,
               difference: this.getDifference(train),
-              cancelled: this.isCancelled(train)
+              cancelled: this.isCancelled(train),
+              _rowVariant: this.checkVariant(train)
             });
       }
     },
@@ -224,7 +236,10 @@ export default {
           }
         }
     },
-
+  checkVariant(train) {
+        if (this.isCancelled(train)) return 'danger'
+        else return ''
+      },
     //Get schedule difference in minutes
     getDifference(train) {
       for (let stop of train.timeTableRows) {
@@ -247,7 +262,6 @@ export default {
     
   },
 
-
   created() {
     this.$axios
       .get("https://rata.digitraffic.fi/api/v1/metadata/stations")
@@ -265,12 +279,12 @@ export default {
 </script>
 
 <style>
-.container {
+/* .container {
   margin-left: 20px;
   margin-top: 20px;
   padding: 0;
   
-}
+} */
 .table th {
   border-top: 0px;
 }
@@ -290,9 +304,24 @@ thead th {
 }
 
 
-.late, .cancelled {
+.late {
   color: red;
 }
 
+.search {
+  max-width: 20%;
+}
 
+.nav  {
+  color: green;
+}
+
+p {
+  margin: 0px;
+}
+
+.table-danger td {
+  color: grey;
+  background-color: lightgray;
+}
 </style>

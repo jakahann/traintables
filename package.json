@@ -19,7 +19,7 @@
     "jquery": "^3.3.1",
     "moment": "^2.22.2",
     "nuxt": "^2.0.0",
-    "vue-simple-suggest": "^1.8.3"
+    "vue-single-select": "^1.0.29"
   },
   "devDependencies": {
     "nodemon": "^1.11.0"
