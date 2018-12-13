@@ -1,1 +1,3 @@
-click on nav-tab -> change pointer
+-> click on nav-tab -> change pointer
+-> vaihtuu  kenttien leveys saapuu | lähtee välillä
+-> Klikkaa x -> keskitä hakukenttään
