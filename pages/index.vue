@@ -7,6 +7,7 @@
  <!-- Searchbox, autocomplete -->
 <div class="search">
  <vue-single-select
+    v-on:reset="" 
     placeholder="Hae asema"
     v-model="chosen" 
     :options="cities"
@@ -113,7 +114,7 @@ export default {
         return 1;
       return 0;
     }
-    let a = this.tableData.sort(compare)
+   
     return this.tableData.sort(compare);
 },
     //API call path depending of the way
@@ -125,7 +126,6 @@ export default {
     //Search the chosen station from list of stations
     //if found stations short code to this.station
     searchStation: function(){
-      console.log(this.chosen)
       let code = this.allStations[this.chosen];
       if (code == undefined) {
         this.station = "no data";
@@ -174,6 +174,8 @@ export default {
     //Changes this.way according to which button is pressed
     //calls toggle for style handling
     buttonFunction(event) {
+      let a = document.getElementById("select")
+      console.log(a)
       if (event.target.text == "Lähtevät") this.way = "DEPARTURE";
       else this.way = "ARRIVAL";
       this.toggleButton(this.way);

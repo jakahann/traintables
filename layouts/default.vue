@@ -7,9 +7,7 @@
 </template>
 
 
-
 <style>
-
 .header {
   background-color: #56A319;
   width: 100%;
