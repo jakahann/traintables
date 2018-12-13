@@ -14,7 +14,8 @@
     v-on:input="searchStation"
 ></vue-single-select> 
 </div>
-    <!-- Navigation tabs, bootstrap nav-tabs -->
+
+<!-- Navigation tabs, bootstrap nav-tabs -->
     <div>
       <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -28,55 +29,20 @@
 
     <!-- data: arrivals tai departures  -->
     {{ getTrains }}
-
-    <b-table
-      class="table"
-      v-if="way == 'ARRIVAL'"
-      striped
-      hover
-      :items="sortedTable"
-      :fields="arrival">
-
-    <!-- template to handle the last cell  -->
-    <template class="info" slot="arrives" slot-scope="data">
-      <p class="late" v-if="isLate(data.item.difference)">{{calcTime(data.item.time, data.item.difference)}}</p>
-      <div> 
-        <p style="font-size: 0.8em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
-        <p v-else>{{parseTime(data.item.time)}}</p>
-      </div> 
-      <p style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
-    </template>
-    </b-table>
-
-    <!-- these two tables are quite similar. Possible to use just one? -->
-    <b-table
-      class="table"
-      v-else
-      striped
-      hover
-      :items="sortedTable"
-      :fields="departure">
-      
-      <template slot="departs" slot-scope="data">
-        <p class="late" v-if="isLate(data.item.difference)">{{calcTime(data.item.time, data.item.difference)}}</p>
-        <div> 
-          <p style="font-size: 0.8em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
-          <p v-else>{{ parseTime(data.item.time)}}</p>
-      </div> 
-      <p style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
-    </template>
-    </b-table>
-  </div>
+    <!-- custom component: tables for data -->
+    <DataTable :fields="this.way == 'DEPARTURE' ? this.departure : this.arrival" :sortedTable="this.sortedTable"></DataTable>
+    
+  </div> 
 </template>
 
 <script>
 import VueSingleSelect from "vue-single-select";
-import moment from "moment";
+import DataTable from '~/components/DataTable'
 
 export default {
-   loading: '~/components/loading.vue',
    components: {
-     VueSingleSelect
+     VueSingleSelect,
+     DataTable
   },
   
   data() {
@@ -151,31 +117,10 @@ export default {
   },
 
   methods: {
-    //simple check if train is late
-    isLate(difference) {
-      if (difference > 0) {
-        return true
-    }
-      
-
-    },
-    //Parse UTC time to local time and return in HH:mm (14:30) format
-    parseTime(time) {
-      let localTime = moment(time).format("HH:mm")
-      return localTime
-    },
-
-      //Calculates new time for a late train by adding the difference to scheduled time
-    calcTime(sched, diff) {
-      let newTime = moment(sched).add(diff, "minutes")
-      return newTime.format("HH:mm")
-    },
-
+    
     //Changes this.way according to which button is pressed
     //calls toggle for style handling
     buttonFunction(event) {
-      let a = document.getElementById("select")
-      console.log(a)
       if (event.target.text == "Lähtevät") this.way = "DEPARTURE";
       else this.way = "ARRIVAL";
       this.toggleButton(this.way);
@@ -284,25 +229,8 @@ export default {
 
 <style>
 
-.table th {
-  border-top: 0px;
-}
 
-.controls {
-  width: 100%;
-}
 
-thead {
-  color: lightgray;
-}
-
-thead th {
-  border-top: 0px;
-}
-
-.late {
-  color: red;
-}
 
 .search {
   min-width: 20%;
@@ -317,12 +245,4 @@ thead th {
 }
 
 
-p {
-  margin: 0px;
-}
-
-.table-danger td {
-  color: grey;
-  background-color: lightgray;
-}
 </style>
