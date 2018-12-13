@@ -1,3 +1,3 @@
--> click on nav-tab -> change pointer
 -> vaihtuu  kenttien leveys saapuu | lähtee välillä
 -> Klikkaa x -> keskitä hakukenttään
+-> lisää myös ei matkustaja asemat

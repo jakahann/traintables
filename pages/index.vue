@@ -38,10 +38,10 @@
 
     <!-- template to handle the last cell  -->
     <template class="info" slot="arrives" slot-scope="data">
-      <p class="late" v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
+      <p class="late" v-if="isLate(data.item.difference)">{{calcTime(data.item.time, data.item.difference)}}</p>
       <div> 
         <p style="font-size: 0.8em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
-        <p v-else>  {{ parseTime(data.item.time)}}</p>
+        <p v-else>{{parseTime(data.item.time)}}</p>
       </div> 
       <p style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
@@ -57,10 +57,10 @@
       :fields="departure">
       
       <template slot="departs" slot-scope="data">
-        <p class="late" v-if="isLate(data.item.difference)"> {{ calcTime(data.item.time, data.item.difference) }}</p>
+        <p class="late" v-if="isLate(data.item.difference)">{{calcTime(data.item.time, data.item.difference)}}</p>
         <div> 
           <p style="font-size: 0.8em;" v-if="isLate(data.item.difference)">({{parseTime(data.item.time)}})</p>
-          <p v-else>  {{ parseTime(data.item.time)}}</p>
+          <p v-else>{{ parseTime(data.item.time)}}</p>
       </div> 
       <p style="color: red;" v-if="data.item.cancelled == true">Cancelled</p>
     </template>
@@ -73,6 +73,7 @@ import VueSingleSelect from "vue-single-select";
 import moment from "moment";
 
 export default {
+   loading: '~/components/loading.vue',
    components: {
      VueSingleSelect
   },
@@ -112,6 +113,7 @@ export default {
         return 1;
       return 0;
     }
+    let a = this.tableData.sort(compare)
     return this.tableData.sort(compare);
 },
     //API call path depending of the way
@@ -308,7 +310,10 @@ thead th {
 
 .nav  {
   color: green;
+  cursor: pointer;
+
 }
+
 
 p {
   margin: 0px;
