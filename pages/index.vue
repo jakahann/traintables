@@ -5,12 +5,11 @@
     <!-- Searchbox/dropdown -->
     <div class="search">
     <vue-single-select
-        v-on:reset="" 
         placeholder="Hae asema"
-        v-model="selected" 
+        v-model="selected"
         :options="cities"
         v-on:input="searchStation"
-    ></vue-single-select> 
+    ></vue-single-select>
     </div>
 
 <!-- Navigation tabs  -->
@@ -25,13 +24,13 @@
       </ul>
     </div>
 
-   
+
     <!-- custom component: shows the actual timetables-->
     <DataTable :fields="this.way == 'DEPARTURE' ? this.departure : this.arrival" :sortedTable="this.sortedTable">
        {{ getTrains }}
     </DataTable>
-    
-  </div> 
+
+  </div>
 </template>
 
 <script>
@@ -43,7 +42,7 @@ export default {
      VueSingleSelect,
      DataTable
   },
-  
+
   data() {
     return {
       selected: '',
@@ -67,7 +66,7 @@ export default {
       way: "ARRIVAL"
     };
   },
-  
+
   computed: {
    // sorted list of tableData
   sortedTable: function() {
@@ -115,7 +114,6 @@ export default {
   },
 
   methods: {
-l
     //Changes this.way according to which button is pressed
     //calls toggle for style handling
     buttonFunction(event) {
@@ -146,10 +144,10 @@ l
 
     //Checks if train is a passanger train (Long-distance or commuter)
     isPassangerTrain(trainCategory) {
-     if (['Long-distance', 'Commuter'].indexOf(trainCategory) >= 0) return true 
+     if (['Long-distance', 'Commuter'].indexOf(trainCategory) >= 0) return true
     },
 
-    //Returns train name 
+    //Returns train name
     getTrainName(train) {
       if (train.trainCategory == 'Commuter') return 'Commuter train ' + train.commuterLineID
       else return train.trainType + " " + train.trainNumber
@@ -187,7 +185,7 @@ l
         }
       }
     },
-    
+
     //Fill the array with the train info shown to user
     fillTable(trains) {
       this.tableData = []
@@ -229,7 +227,7 @@ l
 <style>
 .search {
   min-width: 20%;
-  max-width: 35%; 
+  max-width: 35%;
   margin-bottom: 50px;
 }
 
@@ -238,9 +236,9 @@ l
   cursor: pointer;
 }
 
-@media screen and (max-width: 500px ) {
+ @media screen and (max-width: 500px ) {
   .search {
     min-width: 80%;
   }
-}
+  }
 </style>
