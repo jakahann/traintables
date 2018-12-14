@@ -1,3 +1,1 @@
--> vaihtuu  kenttien leveys saapuu | lähtee välillä ?
--> Klikkaa x -> keskitä hakukenttään ?
--> lisää myös ei matkustaja asemat -> 
+-> Add also info of non-passanger stations

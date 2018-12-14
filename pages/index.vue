@@ -1,21 +1,19 @@
 <template>
   <div class="container">
-    <p>
-      <b>Hae aseman nimellä</b>
-    </p>
+    <p><b>Hae aseman nimellä</b></p>
 
- <!-- Searchbox, autocomplete -->
-<div class="search">
- <vue-single-select
-    v-on:reset="" 
-    placeholder="Hae asema"
-    v-model="chosen" 
-    :options="cities"
-    v-on:input="searchStation"
-></vue-single-select> 
-</div>
+    <!-- Searchbox/dropdown -->
+    <div class="search">
+    <vue-single-select
+        v-on:reset="" 
+        placeholder="Hae asema"
+        v-model="selected" 
+        :options="cities"
+        v-on:input="searchStation"
+    ></vue-single-select> 
+    </div>
 
-<!-- Navigation tabs, bootstrap nav-tabs -->
+<!-- Navigation tabs  -->
     <div>
       <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -24,13 +22,14 @@
         <li class="nav-item">
           <a class="nav-link" id="dep" v-on:click="buttonFunction" value="DEPARTURE">Lähtevät</a>
         </li>
-        </ul>
+      </ul>
     </div>
 
-    <!-- data: arrivals tai departures  -->
-    {{ getTrains }}
-    <!-- custom component: tables for data -->
-    <DataTable :fields="this.way == 'DEPARTURE' ? this.departure : this.arrival" :sortedTable="this.sortedTable"></DataTable>
+   
+    <!-- custom component: shows the actual timetables-->
+    <DataTable :fields="this.way == 'DEPARTURE' ? this.departure : this.arrival" :sortedTable="this.sortedTable">
+       {{ getTrains }}
+    </DataTable>
     
   </div> 
 </template>
@@ -47,12 +46,12 @@ export default {
   
   data() {
     return {
-      chosen: '',
+      selected: '',
       arrival: [
         { key: "train", label: "Juna" },
         { key: "from" , label: "Lähtöasema"},
         { key: "to", label: "Pääteasema" },
-        { key: 'arrives', label: 'Saapuu' }
+        { key: 'arrives', label: 'Saapuu'}
       ],
       departure: [
         { key: "train", label: "Juna" },
@@ -70,8 +69,7 @@ export default {
   },
   
   computed: {
-  
-  // sorted list of tableData
+   // sorted list of tableData
   sortedTable: function() {
     function compare(a, b) {
       if (a.time < b.time)
@@ -80,19 +78,19 @@ export default {
         return 1;
       return 0;
     }
-   
     return this.tableData.sort(compare);
 },
+
     //API call path depending of the way
     traffic: function() {
       if (this.way == "ARRIVAL") return process.env.ARRIVAL;
       else return process.env.DEPARTURE;
-
     },
-    //Search the chosen station from list of stations
+
+    //Search the selected station from list of stations
     //if found stations short code to this.station
     searchStation: function(){
-      let code = this.allStations[this.chosen];
+      let code = this.allStations[this.selected];
       if (code == undefined) {
         this.station = "no data";
       }
@@ -139,44 +137,25 @@ export default {
       }
     },
 
-    //returns city associated to given short code
+    //Returns city associated to given short code
     getCityName(ourCode) {
       for (let key in this.allStations) {
         if (ourCode == this.allStations[key]) return key;
       }
     },
 
-    //checks if train is a passanger train (Long-distance or commuter)
+    //Checks if train is a passanger train (Long-distance or commuter)
     isPassangerTrain(trainCategory) {
      if (['Long-distance', 'Commuter'].indexOf(trainCategory) >= 0) return true 
     },
 
-    //get train name 
+    //Returns train name 
     getTrainName(train) {
       if (train.trainCategory == 'Commuter') return 'Commuter train ' + train.commuterLineID
       else return train.trainType + " " + train.trainNumber
     },
-    
-    //Fill the array with the train info shown to user
-    fillTable(trains) {
-      this.tableData = []
-      for (let train of trains) {
-        let firstStation = train.timeTableRows[0].stationShortCode
-        let lastStation = train.timeTableRows[train.timeTableRows.length - 1].stationShortCode
 
-        this.tableData.push({
-              train: this.getTrainName(train),
-              from: this.getCityName(firstStation),
-              to: this.getCityName(lastStation),
-              time: this.getScheduledTime(train) ,
-              difference: this.getDifference(train),
-              cancelled: this.isCancelled(train),
-              _rowVariant: this.checkVariant(train)
-            });
-      }
-    },
-    
-    //returns at what time train should arrive or leave the station
+     //Returns at what time train should arrive or leave the station
     getScheduledTime(train) {
       for (let stop of train.timeTableRows) {
           if (stop.stationShortCode == this.station && stop.type == this.way) {
@@ -185,7 +164,7 @@ export default {
         }
     },
 
-  //checks which variant for cell: cancelled -> customized danger else no variant
+  //Checks which variant for cell: cancelled -> customized danger else no variant
   checkVariant(train) {
         if (this.isCancelled(train)) return 'danger'
         else return ''
@@ -208,6 +187,25 @@ export default {
         }
       }
     },
+    
+    //Fill the array with the train info shown to user
+    fillTable(trains) {
+      this.tableData = []
+      for (let train of trains) {
+        let firstStation = train.timeTableRows[0].stationShortCode
+        let lastStation = train.timeTableRows[train.timeTableRows.length - 1].stationShortCode
+
+        this.tableData.push({
+              train: this.getTrainName(train),
+              from: this.getCityName(firstStation),
+              to: this.getCityName(lastStation),
+              time: this.getScheduledTime(train) ,
+              difference: this.getDifference(train),
+              cancelled: this.isCancelled(train),
+              _rowVariant: this.checkVariant(train)
+            });
+      }
+    },
   },
 
   //Lifecycle hook collects metadata when site created
@@ -227,11 +225,8 @@ export default {
 };
 </script>
 
+
 <style>
-
-
-
-
 .search {
   min-width: 20%;
   max-width: 35%; 
@@ -241,8 +236,5 @@ export default {
 .nav  {
   color: green;
   cursor: pointer;
-
 }
-
-
 </style>

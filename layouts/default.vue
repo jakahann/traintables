@@ -2,7 +2,7 @@
   <div>
     <div class="header shadow">
       <p>Aseman junatiedot</p></div>
-    <nuxt/>
+      <nuxt/>
   </div>
 </template>
 

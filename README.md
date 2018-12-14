@@ -1,22 +1,25 @@
-# junat
+# A website to check for finnish train schedules by station
 
-> My priceless Nuxt.js project
+A Nuxt.js single page website.
 
-## Build Setup
+#How to run it locally
 
-``` bash
-# install dependencies
-$ npm install
+First clone this project to your machine
+> git clone git@github.com:jakahann/traintables.git
 
-# serve with hot reload at localhost:3000
-$ npm run dev
+Go into the created folder
+> cd traintables
 
-# build for production and launch server
-$ npm run build
-$ npm start
+Install dependencies
+> npm install 
 
-# generate static project
-$ npm run generate
-```
+Build the project
+> npm run build
+
+Runt it locally
+> npm run start
+
+With favorite browser
+> http://localhost:3000
 
 For detailed explanation on how things work, checkout [Nuxt.js docs](https://nuxtjs.org).
