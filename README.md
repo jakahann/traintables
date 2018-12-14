@@ -21,3 +21,13 @@ Runt it locally
 
 With favorite browser
 > http://localhost:3000
+
+# For developers
+
+``` bash
+ git clone git@github.com:jakahann/traintables.git
+ cd traintables
+ npm install
+ npm run dev
+```
+

@@ -149,7 +149,7 @@ export default {
 
     //Returns train name
     getTrainName(train) {
-      if (train.trainCategory == 'Commuter') return 'Commuter train ' + train.commuterLineID
+      if (train.trainCategory == 'Commuter') return 'Paikallisjuna ' + train.commuterLineID
       else return train.trainType + " " + train.trainNumber
     },
 

@@ -18,7 +18,7 @@
           <p v-else>{{parseTime(data.item.time)}}</p>
       </div> 
 
-      <p  v-if="data.item.cancelled == true" class="cancelled">Cancelled</p>
+      <p  v-if="data.item.cancelled == true" class="cancelled">Peruuttu</p>
     </template> 
    </b-table> 
 
