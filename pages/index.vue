@@ -9,6 +9,7 @@
         v-model="selected"
         :options="cities"
         v-on:input="searchStation"
+        :maxResults="cities.length"
     ></vue-single-select>
     </div>
 
