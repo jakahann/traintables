@@ -1,5 +1,13 @@
 # A website to check for finnish train schedules by station
 
+A website where you can lookup station specific information about train schedules
+on the Finnish railway system. 
+
+Source for schedule / traffick information: 
+Liikennevirasto / rata.digitraffic.fi, lisenssi CC 4.0 BY
+
+
+
 A Nuxt.js single page website. checkout [Nuxt.js docs](https://nuxtjs.org).
 
 # How to run it locally
