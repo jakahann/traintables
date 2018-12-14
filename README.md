@@ -4,7 +4,7 @@ A website where you can lookup station specific information about train schedule
 on the Finnish railway system. 
 
 Source for schedule / traffick information: 
-Liikennevirasto / rata.digitraffic.fi, lisenssi CC 4.0 BY
+Liikennevirasto / rata.digitraffic.fi, licensed under CC 4.0 BY
 
 
 
