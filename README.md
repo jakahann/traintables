@@ -5,10 +5,10 @@ A Nuxt.js single page website. checkout [Nuxt.js docs](https://nuxtjs.org).
 # How to run it locally
 
 First clone this project to your machine
-> git clone git@github.com:jakahann/traintables.git
+> git clone git@github.com:jakahann/train_timetables.git
 
 Go into the created folder
-> cd traintables
+> cd train_timetables
 
 Install dependencies
 > npm install 
