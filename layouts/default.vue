@@ -25,5 +25,12 @@
   margin-top: 50px;
 }
 
+@media screen and (max-width: 500px) {
+  .container {
+    margin-left: 2px;
+  }
+
+}
+
 
 </style>
