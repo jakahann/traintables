@@ -115,7 +115,7 @@ export default {
   },
 
   methods: {
-    
+
     //Changes this.way according to which button is pressed
     //calls toggle for style handling
     buttonFunction(event) {
@@ -236,5 +236,11 @@ export default {
 .nav  {
   color: green;
   cursor: pointer;
+}
+
+@media screen and (max-width: 500px ) {
+  .search {
+    min-width: 80%;
+  }
 }
 </style>
