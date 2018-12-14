@@ -115,7 +115,7 @@ export default {
   },
 
   methods: {
-
+l
     //Changes this.way according to which button is pressed
     //calls toggle for style handling
     buttonFunction(event) {
