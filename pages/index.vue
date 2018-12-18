@@ -88,7 +88,6 @@ export default {
     },
 
     //Search the selected station from list of stations
-    //if found stations short code to this.station
     searchStation: function(){
       let code = this.allStations[this.selected];
       if (code == undefined) {
