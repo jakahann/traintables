@@ -1,28 +1,23 @@
 <!-- Component to show the stations data on table  -->
 <template>
-<div>
+  <div>
+    <b-table class="table" striped hover :items="sortedTable" :fields="fields">
+      <!-- template to handle the last cell  -->
+      <template class="info" :slot="this.lastCell" slot-scope="data">
+        <p
+          v-if="isLate(data.item.difference)"
+          class="late"
+        >{{calcTime(data.item.time, data.item.difference)}}</p>
 
-  <b-table
-      class="table"
-      striped
-      hover
-      :items="sortedTable"
-      :fields="fields">
-
-     <!-- template to handle the last cell  -->
-      <template class="info" :slot='this.lastCell' slot-scope="data">
-      <p v-if="isLate(data.item.difference)" class="late">{{calcTime(data.item.time, data.item.difference)}}</p>
-
-      <div> 
+        <div>
           <p v-if="isLate(data.item.difference)" class="oldtime">({{parseTime(data.item.time)}})</p>
           <p v-else>{{parseTime(data.item.time)}}</p>
-      </div> 
+        </div>
 
-      <p  v-if="data.item.cancelled == true" class="cancelled">Peruuttu</p>
-    </template> 
-   </b-table> 
-
-</div>
+        <p v-if="data.item.cancelled == true" class="cancelled">Peruuttu</p>
+      </template>
+    </b-table>
+  </div>
 </template>
 
 <script>
@@ -30,43 +25,43 @@ import moment from "moment";
 
 export default {
   //Props are fields that the component take when it's called (compare to parameters)
-  name: 'DataTable',
+  name: "DataTable",
   props: {
     fields: {
-      type:Array,
+      type: Array,
       required: true
     },
     sortedTable: {
       type: Array,
       required: true
-    },
+    }
   },
 
   computed: {
     //how the last cell in a row is named and handled(can be 'arrives' or 'departs')
     lastCell: function() {
-      return this.fields[3].key
+      return this.fields[3].key;
     }
   },
 
   methods: {
     //Simple check if the train is behind schedule
     isLate(difference) {
-      if (difference > 0) return true
+      if (difference > 0) return true;
     },
 
     //Parse UTC time to local time and return in HH:mm (14:30) format
     parseTime(time) {
-      return moment(time).format("HH:mm")
+      return moment(time).format("HH:mm");
     },
 
     //Calculates new time for a late train by adding the differenceInMinutes to scheduled time
     calcTime(sched, diff) {
-      let newTime = moment(sched).add(diff, "minutes")
-      return newTime.format("HH:mm")
-    },
-  },
-}
+      let newTime = moment(sched).add(diff, "minutes");
+      return newTime.format("HH:mm");
+    }
+  }
+};
 </script>
 
 <style>
@@ -96,7 +91,8 @@ p {
   background-color: lightgray;
 }
 
-.late, .cancelled {
+.late,
+.cancelled {
   color: red;
 }
 
@@ -104,5 +100,4 @@ p {
   color: grey;
   font-size: 0.8em;
 }
-
 </style>

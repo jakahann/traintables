@@ -12,7 +12,7 @@ module.exports = {
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: pkg.content}
+      { hid: 'description', name: 'description', content: pkg.content }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
@@ -52,10 +52,10 @@ module.exports = {
     // See https://github.com/nuxt-community/axios-module#options
   },
   env: {
-      baseUrl:'https://rata.digitraffic.fi/api/v1/live-trains/station/',
-      DEPARTURE: "?departing_trains=100&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0",
-      ARRIVAL: "?departing_trains=0&include_nonstopping=false&departed_trains=0&arriving_trains=100&arrived_trains=0",
-    
+    baseUrl: 'https://rata.digitraffic.fi/api/v1/live-trains/station/',
+    DEPARTURE: "?departing_trains=100&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0",
+    ARRIVAL: "?departing_trains=0&include_nonstopping=false&departed_trains=0&arriving_trains=100&arrived_trains=0",
+
   },
 
   /*
@@ -66,7 +66,7 @@ module.exports = {
     ** You can extend webpack config here
     */
     extend(config, ctx) {
-      
+
     }
   }
 }
