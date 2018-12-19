@@ -11,9 +11,15 @@
       <b-modal id="modal1" :ok-only="true" title="Lisenssi">
         <p class="my-1">
           Palvelun data on liikenneviraston
-          <a href="https://rata.digitraffic.fi" target="_blank">Digi-traffic palvelusta</a>.
+          <a
+            href="https://rata.digitraffic.fi"
+            target="_blank"
+          >Digi-traffic palvelusta</a>.
           Rajapinta on lisenssioitu
-          <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank">CC 4.0 BY</a> -lisenssillä
+          <a
+            href="http://creativecommons.org/licenses/by/4.0/"
+            target="_blank"
+          >CC 4.0 BY</a> -lisenssillä
         </p>
       </b-modal>
     </div>
