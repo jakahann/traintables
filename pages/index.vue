@@ -70,6 +70,10 @@ export default {
   },
 
   computed: {
+    loadedProjects() {
+      return this.$store.getters.loadedProjects;
+    },
+
     // sorted list of tableData
     sortedTable: function() {
       return this.tableData.sort(mylib.compare);
