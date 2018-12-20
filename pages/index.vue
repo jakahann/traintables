@@ -5,15 +5,7 @@
     </p>
 
     <!-- Searchbox/dropdown -->
-    <div class="search">
-      <vue-single-select
-        placeholder="Hae asema"
-        v-model="selected"
-        :options="cities"
-        v-on:input="searchStation"
-        :maxResults="cities.length"
-      ></vue-single-select>
-    </div>
+    <Search id="search" :options="cities" :inputFunction="searchStation" />
 
     <!-- Navigation tabs  -->
     <div>
@@ -36,19 +28,18 @@
 </template>
 
 <script>
-import VueSingleSelect from "vue-single-select";
 import DataTable from "~/components/DataTable";
+import Search from "~/components/Search";
 const mylib = require("~/modules/mylib.js");
 const trainUtils = require("~/modules/trainUtils.js");
 export default {
   components: {
-    VueSingleSelect,
-    DataTable
+    DataTable,
+    Search
   },
 
   data() {
     return {
-      selected: "",
       arrival: [
         { key: "train", label: "Juna" },
         { key: "from", label: "Lähtöasema" },
@@ -70,10 +61,6 @@ export default {
   },
 
   computed: {
-    loadedProjects() {
-      return this.$store.getters.loadedProjects;
-    },
-
     // sorted list of tableData
     sortedTable: function() {
       return this.tableData.sort(mylib.compare);
@@ -83,17 +70,6 @@ export default {
     traffic: function() {
       if (this.way == "ARRIVAL") return process.env.ARRIVAL;
       else return process.env.DEPARTURE;
-    },
-
-    //Search the selected station from list of stations
-    searchStation: function() {
-      let code = this.allStations[this.selected];
-      if (code == undefined) {
-        this.station = "no data";
-      }
-      if (code != undefined) {
-        this.station = code;
-      }
     },
 
     // Retrieves data from API and populate arrays
@@ -113,6 +89,17 @@ export default {
   },
 
   methods: {
+    //Search the selected station from list of stations
+    searchStation: function(selected) {
+      let code = this.allStations[selected];
+      if (code == undefined) {
+        this.station = "no data";
+      }
+      if (code != undefined) {
+        this.station = code;
+      }
+    },
+
     //Changes this.way according to which button is pressed
     //calls toggle for style handling
     buttonFunction(event) {

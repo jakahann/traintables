@@ -1,25 +1,25 @@
-const pkg = require("./package")
+const pkg = require('./package');
 
 module.exports = {
-  mode: "spa",
+  mode: 'spa',
 
   /*
    ** Headers of the page
    */
   head: {
-    title: "Suomen junaliikenteen aikataulut",
+    title: 'Suomen junaliikenteen aikataulut',
     meta: [
-      { charset: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { hid: "description", name: "description", content: pkg.content }
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { hid: 'description', name: 'description', content: pkg.content }
     ],
-    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }]
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
   },
 
   /*
    ** Customize the progress-bar color
    */
-  loading: { color: "#fff" },
+  loading: { color: '#fff' },
 
   /*
    ** Global CSS
@@ -36,9 +36,9 @@ module.exports = {
    */
   modules: [
     // Doc: https://github.com/nuxt-community/axios-module#usage
-    "@nuxtjs/axios",
+    '@nuxtjs/axios',
     // Doc: https://bootstrap-vue.js.org/docs/
-    "bootstrap-vue/nuxt"
+    'bootstrap-vue/nuxt'
   ],
   /*
    ** Axios module configuration
@@ -47,11 +47,11 @@ module.exports = {
     // See https://github.com/nuxt-community/axios-module#options
   },
   env: {
-    baseUrl: "https://rata.digitraffic.fi/api/v1/live-trains/station/",
+    baseUrl: 'https://rata.digitraffic.fi/api/v1/live-trains/station/',
     DEPARTURE:
-      "?departing_trains=100&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0",
+      '?departing_trains=100&include_nonstopping=false&departed_trains=0&arriving_trains=0&arrived_trains=0',
     ARRIVAL:
-      "?departing_trains=0&include_nonstopping=false&departed_trains=0&arriving_trains=100&arrived_trains=0"
+      '?departing_trains=0&include_nonstopping=false&departed_trains=0&arriving_trains=100&arrived_trains=0'
   },
 
   /*
@@ -61,15 +61,6 @@ module.exports = {
     /*
      ** You can extend webpack config here
      */
-    extend(config, ctx) {
-      if (ctx.isDev && ctx.isClient) {
-        config.module.rules.push({
-          enforce: "pre",
-          test: /\.(js|vue)$/,
-          loader: "eslint-loader",
-          exclude: /(node_modules)/
-        })
-      }
-    }
+    extend(config, ctx) {}
   }
-}
+};
