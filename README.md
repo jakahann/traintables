@@ -1,4 +1,4 @@
-# A website to check for finnish train schedules by station
+# A website to check for Finnish train schedules by station
 
 A website where you can lookup station specific information about train schedules
 on the Finnish railway system. 
